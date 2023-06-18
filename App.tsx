@@ -8,14 +8,18 @@ import {
   Image,
   Dimensions,
   ActivityIndicator,
+  SafeAreaView,
+  Keyboard,
 } from 'react-native';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
 import CloseIcon from './assets/icons/close.svg';
-import TextIcon from './assets/icons/textIcon.svg';
+import TextIcon from './assets/icons/textIcon.png';
 import StickerIcon from './assets/icons/stickerIcon.svg';
 import {ISticker} from './src/shared/models/interface/sticker.interface';
 import StickersPicker from './src/components/StickersPicker';
 import {ActionSheetRef} from 'react-native-actions-sheet';
+import ResizableSticker from './src/components/ResizableSticker';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 const App = (): JSX.Element => {
   const cameraRef = useRef<Camera | null>(null);
@@ -27,6 +31,8 @@ const App = (): JSX.Element => {
   const [showCamera, setShowCamera] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
   const [imagePath, setImagePath] = useState<string>('');
+  const [_, setSelectedItem] = useState<any | null>(null);
+  const [selectedItemsList, setSelectedItemsList] = useState<any[]>([]);
 
   const checkPermission = useCallback(async () => {
     const newCameraPermission = await Camera.requestCameraPermission();
@@ -52,16 +58,24 @@ const App = (): JSX.Element => {
     setShowCamera(true);
   };
 
-  const handleSelect = (item: ISticker) => {
-    console.log(item, 'item');
-  };
-
   const handleOpen = (): void => {
     sheetRef.current?.show();
   };
 
   const handleClose = (): void => {
     sheetRef?.current?.hide();
+  };
+
+  const handleSelect = (event: any, item: ISticker) => {
+    console.log(item, 'item');
+    setSelectedItem(item);
+    setSelectedItemsList([...selectedItemsList, item]);
+    Keyboard.dismiss();
+    handleClose();
+  };
+
+  const saveBtnHandler = () => {
+    console.log('save');
   };
 
   const generateContent = useCallback((): JSX.Element => {
@@ -73,6 +87,13 @@ const App = (): JSX.Element => {
             uri: `file://'${imagePath}`,
           }}
         />
+        {selectedItemsList.length > 0 ? (
+          <View style={styles.stickersContainer}>
+            {selectedItemsList.map((item, index) => (
+              <ResizableSticker key={index} source={item.path} />
+            ))}
+          </View>
+        ) : null}
         <View style={styles.backButton}>
           <TouchableOpacity style={styles.closeBtn} onPress={handleShowCamera}>
             <CloseIcon height={40} color="white" width={40} />
@@ -87,12 +108,10 @@ const App = (): JSX.Element => {
           <TouchableOpacity
             style={styles.closeBtn}
             onPress={() => console.log('text icon')}>
-            <TextIcon
-              height={40}
-              width={40}
-              color={'black'}
-              stroke={'black'}
-              fill={'darkgray'}
+            <Image
+              source={TextIcon}
+              style={{width: 40, height: 40}}
+              resizeMode="contain"
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.closeBtn} onPress={handleOpen}>
@@ -104,14 +123,26 @@ const App = (): JSX.Element => {
             />
           </TouchableOpacity>
         </View>
+        {selectedItemsList.length > 0 ? (
+          <TouchableOpacity style={styles.saveBtn} onPress={saveBtnHandler}>
+            <Text>Save in the gallery</Text>
+          </TouchableOpacity>
+        ) : null}
       </>
     ) : (
-      <View>
+      <View style={{flex: 1}}>
         <Text>loading</Text>
         <ActivityIndicator size="large" color="red" />
       </View>
     );
-  }, [imagePath, loading, sheetRef.current, handleClose, handleSelect]);
+  }, [
+    imagePath,
+    loading,
+    sheetRef.current,
+    handleClose,
+    handleSelect,
+    selectedItemsList,
+  ]);
 
   if (!device) {
     return (
@@ -122,32 +153,39 @@ const App = (): JSX.Element => {
   }
 
   return (
-    <View style={styles.container}>
-      {showCamera ? (
-        <>
-          <Camera
-            ref={cameraRef}
-            style={StyleSheet.absoluteFill}
-            device={device}
-            isActive={showCamera}
-            photo={true}
-          />
+    <SafeAreaView style={styles.safeAreaContainer}>
+      <GestureHandlerRootView style={{flex: 1}}>
+        <View style={styles.container}>
+          {showCamera ? (
+            <>
+              <Camera
+                ref={cameraRef}
+                style={StyleSheet.absoluteFill}
+                device={device}
+                isActive={showCamera}
+                photo={true}
+              />
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.camButton}
-              onPress={() => capturePhoto()}
-            />
-          </View>
-        </>
-      ) : (
-        <>{generateContent()}</>
-      )}
-    </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.camButton}
+                  onPress={() => capturePhoto()}
+                />
+              </View>
+            </>
+          ) : (
+            <>{generateContent()}</>
+          )}
+        </View>
+      </GestureHandlerRootView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeAreaContainer: {
+    flex: 1,
+  },
   deviceNotAvailableContainer: {
     backgroundColor: 'white',
     height: Dimensions.get('window').height,
@@ -174,12 +212,12 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   buttonContainer: {
-    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
     bottom: 5,
     padding: 20,
+    position: 'absolute',
   },
   buttons: {
     flexDirection: 'row',
@@ -239,6 +277,42 @@ const styles = StyleSheet.create({
     width: '100%',
     transform: [{translateY: 0}],
     padding: 20,
+  },
+  stickersContainer: {
+    position: 'absolute',
+    top: 100,
+    left: 100,
+    height: '100%',
+    width: '100%',
+    zIndex: 2,
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: -50,
+    right: 0,
+    left: 0,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'red',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  saveBtn: {
+    flex: 1,
+    height: 50,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    position: 'absolute',
+    bottom: 46,
+    width: '85%',
+  },
+  saveBtnText: {
+    color: '#202020',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
 

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   TextInput,
@@ -6,9 +6,11 @@ import {
   Image,
   StyleSheet,
   Text,
-  SafeAreaView,
   Keyboard,
   KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+  StatusBar,
 } from 'react-native';
 import {ScrollView} from 'react-native';
 import {stickersData} from '../../shared/constants/data';
@@ -17,7 +19,7 @@ import BackIcon from '../../../assets/icons/backIcon.svg';
 import BottomSheet from '../../shared/components/BottomSheet';
 
 interface IStickerPickerProps {
-  handleSelect: (item: ISticker) => void;
+  handleSelect: (event: any, item: ISticker) => void;
   bottomSheetRef: any;
   handleClose: () => void;
 }
@@ -29,6 +31,33 @@ const StickersPicker = ({
 }: IStickerPickerProps): JSX.Element => {
   const [inputValue, setInputValue] = useState<string>('');
   const [stickersList, setStickersList] = useState<ISticker[]>(stickersData);
+
+  // const optimizedStickersList = useMemo(async () => {
+  //   const data = stickersList.map(async (item: ISticker) => {
+  //     const val = await imageCompress(item.path);
+  //     console.log(val, 'val');
+  //     return {...item, path: val};
+  //   });
+  //   const result = data;
+  //   return result;
+  // }, [stickersList]);
+
+  const [enabled, setEnabled] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardWillShow', () => {
+      setEnabled(true);
+    });
+
+    const hideSubscription = Keyboard.addListener('keyboardWillHide', () => {
+      setEnabled(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const handleChange = (text: string) => {
     const updatedData = text
@@ -48,59 +77,70 @@ const StickersPicker = ({
   };
 
   return (
-    <SafeAreaView>
-      <KeyboardAvoidingView>
-        <BottomSheet
-          containerStyle={styles.bottomSheetStyle}
-          sheetRef={bottomSheetRef}
-          handleClose={closeBottomSheet}>
-          <View style={styles.textFieldArea}>
-            <TouchableOpacity
-              onPress={closeBottomSheet}
-              style={styles.closeSheetBtn}>
-              <BackIcon width={14} height={14} fill="white" />
-            </TouchableOpacity>
-            <TextInput
-              placeholder="Search GIPHY..."
-              value={inputValue}
-              onChangeText={handleChange}
-              style={styles.textInput}
-            />
-          </View>
-          <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-            {stickersList.length > 0 ? (
-              stickersList.map((item: ISticker) => {
-                return (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={styles.stickerItem}
-                    onPress={() => handleSelect(item)}>
-                    <Image
-                      style={styles.imgStyle}
-                      source={item.path}
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                );
-              })
-            ) : (
-              <View style={styles.notFoundContainer}>
-                <Text style={styles.notFoundText}>Not Found</Text>
-              </View>
-            )}
-          </ScrollView>
-        </BottomSheet>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <KeyboardAvoidingView
+      behavior={'height'}
+      style={styles.keyboardAvoidingStyle}
+      enabled={enabled}>
+      <BottomSheet
+        containerStyle={styles.bottomSheetStyle}
+        sheetRef={bottomSheetRef}
+        handleClose={closeBottomSheet}>
+        <View style={styles.textFieldArea}>
+          <TouchableOpacity
+            onPress={closeBottomSheet}
+            style={styles.closeSheetBtn}>
+            <BackIcon width={14} height={14} fill="white" />
+          </TouchableOpacity>
+          <TextInput
+            placeholder="Search GIPHY..."
+            value={inputValue}
+            onChangeText={handleChange}
+            style={styles.textInput}
+          />
+        </View>
+        <ScrollView
+          keyboardShouldPersistTaps="always"
+          contentContainerStyle={styles.scrollViewContainer}>
+          {stickersList.length > 0 ? (
+            stickersList.map((item: ISticker) => {
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.stickerItem}
+                  onPress={(event: any) => handleSelect(event, item)}>
+                  <Image
+                    style={styles.imgStyle}
+                    source={item.path}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              );
+            })
+          ) : (
+            <View style={styles.notFoundContainer}>
+              <Text style={styles.notFoundText}>Not Found</Text>
+            </View>
+          )}
+        </ScrollView>
+      </BottomSheet>
+    </KeyboardAvoidingView>
   );
 };
 
 export default StickersPicker;
 
 const styles = StyleSheet.create({
+  keyboardAvoidingStyle: {
+    flex: 1,
+    height:
+      Platform.OS === 'android'
+        ? Dimensions.get('window').height -
+          (StatusBar.currentHeight ? StatusBar.currentHeight : 0)
+        : Dimensions.get('window').height,
+  },
   scrollViewContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     flexWrap: 'wrap',
     alignItems: 'center',
     flexGrow: 1,
@@ -110,8 +150,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 10,
-    height: 100,
-    marginBottom: 85,
+    height: 150,
+    marginBottom: 30,
   },
   closeSheetBtn: {
     marginLeft: 10,
@@ -121,9 +161,10 @@ const styles = StyleSheet.create({
   },
   bottomSheetStyle: {
     flex: 1,
-    backgroundColor: 'rgba(52, 52, 52, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     marginBottom: 50,
     paddingHorizontal: 10,
+    height: Dimensions.get('screen').height,
     width: '100%',
   },
   textFieldArea: {
@@ -137,6 +178,7 @@ const styles = StyleSheet.create({
   },
   imgStyle: {
     width: '100%',
+    height: '100%',
   },
   notFoundContainer: {
     justifyContent: 'center',
