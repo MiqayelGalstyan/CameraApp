@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {
   View,
   TextInput,
@@ -32,37 +32,14 @@ const StickersPicker = ({
   const [inputValue, setInputValue] = useState<string>('');
   const [stickersList, setStickersList] = useState<ISticker[]>(stickersData);
 
-  // const optimizedStickersList = useMemo(async () => {
-  //   const data = stickersList.map(async (item: ISticker) => {
-  //     const val = await imageCompress(item.path);
-  //     console.log(val, 'val');
-  //     return {...item, path: val};
-  //   });
-  //   const result = data;
-  //   return result;
-  // }, [stickersList]);
-
-  const [enabled, setEnabled] = useState(false);
-
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardWillShow', () => {
-      setEnabled(true);
-    });
-
-    const hideSubscription = Keyboard.addListener('keyboardWillHide', () => {
-      setEnabled(false);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
+  const textInputRef = useRef<TextInput>(null);
 
   const handleChange = (text: string) => {
     const updatedData = text
       ? stickersData.filter((item: ISticker) =>
-          item.keyword.find(elem => elem.startsWith(text)),
+          item.keyword.find(elem =>
+            elem?.toLowerCase().startsWith(text?.toLowerCase()),
+          ),
         )
       : stickersData;
     setInputValue(text);
@@ -74,13 +51,13 @@ const StickersPicker = ({
     setInputValue('');
     handleClose();
     Keyboard.dismiss();
+    textInputRef.current?.blur();
   };
 
   return (
     <KeyboardAvoidingView
       behavior={'height'}
-      style={styles.keyboardAvoidingStyle}
-      enabled={enabled}>
+      style={styles.keyboardAvoidingStyle}>
       <BottomSheet
         containerStyle={styles.bottomSheetStyle}
         sheetRef={bottomSheetRef}
@@ -96,26 +73,25 @@ const StickersPicker = ({
             value={inputValue}
             onChangeText={handleChange}
             style={styles.textInput}
+            ref={textInputRef}
           />
         </View>
         <ScrollView
           keyboardShouldPersistTaps="always"
           contentContainerStyle={styles.scrollViewContainer}>
           {stickersList.length > 0 ? (
-            stickersList.map((item: ISticker) => {
-              return (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.stickerItem}
-                  onPress={(event: any) => handleSelect(event, item)}>
-                  <Image
-                    style={styles.imgStyle}
-                    source={item.path}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-              );
-            })
+            stickersList.map((item: ISticker) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.stickerItem}
+                onPress={(event: any) => handleSelect(event, item)}>
+                <Image
+                  style={styles.imgStyle}
+                  source={item.path}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            ))
           ) : (
             <View style={styles.notFoundContainer}>
               <Text style={styles.notFoundText}>Not Found</Text>

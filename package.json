@@ -8,18 +8,25 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "clean": "react-native clean",
+    "link": "react-native link",
+    "android-release": "react-native run-android --variant='release'"
   },
   "dependencies": {
+    "npm": "^9.7.1",
     "patch-package": "^7.0.0",
     "react": "18.2.0",
     "react-native": "0.71.11",
     "react-native-actions-sheet": "^0.8.29",
     "react-native-compressor": "^1.6.1",
+    "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.12.0",
-    "react-native-reanimated": "^2.2.2",
+    "react-native-permissions": "^3.8.0",
+    "react-native-reanimated": "^2.17.0",
     "react-native-redash": "^18.1.0",
     "react-native-svg": "^13.9.0",
+    "react-native-view-shot": "^3.7.0",
     "react-native-vision-camera": "^2.15.4"
   },
   "devDependencies": {
