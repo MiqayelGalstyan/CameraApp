@@ -33,18 +33,18 @@ Please grant your permission to the camera.
 2. Two icons can be seen on the left side of your screen. 
 
 <p align="center">
-  <img src="./assets/images/photo1.jpeg" width="500">
+  <img src="./assets/images/photo1.jpeg" width="300">
 </p>
 3. After taking photo, please press on the stickers icon where you will find all the available stickers. 
 
 <p align="center">
-  <img src="./assets/images/photo2.jpeg" width="500">
+  <img src="./assets/images/photo2.jpeg" width="300">
 </p>
 
 4. To find a sticker, type one of the following keywords: "kargin", "hi", "ok", "barev", "armenian". 
 
 <p align="center">
-  <img src="./assets/images/photo3.jpeg" width="500">
+  <img src="./assets/images/photo3.jpeg" width="300">
 </p>
 
 5. After choosing the sticker, you can resize,rotate and scale the sticker/stickers.
@@ -54,7 +54,7 @@ Please grant your permission to the camera.
 7. The image is successfully saved in your phone.
 
 <p align="center">
-  <img src="./assets/images/photo4.jpeg" width="500">
+  <img src="./assets/images/photo4.jpeg" width="300">
 </p>
 
 ## The project structure is organized as follows:
