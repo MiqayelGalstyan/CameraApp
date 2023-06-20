@@ -47,6 +47,8 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>$(PRODUCT_NAME) would like to save photos to your library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+<string>This app needs access to your photo library to save images.</string>
 	<string>My description about why I need this capability</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>

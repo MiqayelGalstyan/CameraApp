@@ -1,6 +1,14 @@
 import React, {useRef, useState} from 'react';
 import ShowCamera from '../components/ShowCamera';
-import {Alert, Dimensions, Platform, StyleSheet, View} from 'react-native';
+import {
+  Alert,
+  Dimensions,
+  Linking,
+  PermissionsAndroid,
+  Platform,
+  StyleSheet,
+  View,
+} from 'react-native';
 import RNFS from 'react-native-fs';
 import {captureRef} from 'react-native-view-shot';
 import {request, PERMISSIONS} from 'react-native-permissions';
@@ -43,26 +51,51 @@ const MainLayout = ({device}: IMainLayout): JSX.Element => {
       });
       const uniqueId = Date.now();
       const filename = `${uniqueId}.jpg`;
+      let destinationPath;
 
-      const permission =
-        Platform.OS === 'android'
-          ? PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE
-          : PERMISSIONS.IOS.PHOTO_LIBRARY;
-
-      const granted = await request(permission);
-
-      if (granted === 'granted') {
-        const destinationPath =
-          Platform.OS === 'android'
-            ? `${RNFS.DownloadDirectoryPath}/${filename}`
-            : `${RNFS.LibraryDirectoryPath}/${filename}`;
-
-        await RNFS.moveFile(uri, destinationPath);
-        Alert.alert('Image saved successfully!');
-        setCameraVisible(true);
+      if (Platform.OS === 'android') {
+        if (Number(Platform.constants.Release) < 13) {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+            {
+              title: 'Save folder Permission',
+              message: 'App needs access to your library folder ,please allow',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
+            },
+          );
+          if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+            Alert.alert(
+              '',
+              'App needs access to your library folder ,please allow',
+              [
+                {
+                  text: 'Ok',
+                  onPress: () => Linking.openSettings(),
+                },
+              ],
+              {cancelable: false},
+            );
+            return;
+          } else {
+            destinationPath = `${RNFS.DownloadDirectoryPath}/${filename}`;
+          }
+        } else {
+          destinationPath = `${RNFS.DownloadDirectoryPath}/${filename}`;
+        }
       } else {
-        Alert.alert('Permission denied. Unable to save image.');
+        const permission = PERMISSIONS.IOS.PHOTO_LIBRARY;
+
+        const permissionStatus = await request(permission);
+
+        if (permissionStatus === 'granted') {
+          destinationPath = `${RNFS.LibraryDirectoryPath}/${filename}`;
+        }
       }
+
+      await RNFS.moveFile(uri, destinationPath as string);
+      Alert.alert('Image saved successfully!');
+      setCameraVisible(true);
     } catch (error) {
       Alert.alert(
         'Error while capturing and saving the image:',
