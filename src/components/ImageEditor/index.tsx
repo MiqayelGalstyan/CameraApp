@@ -1,57 +1,55 @@
-import React from 'react';
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import ResizableSticker from '../ResizableSticker';
+import React, {useState} from 'react';
+import {Keyboard, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import StickersPicker from '../StickersPicker';
 import Loader from '../../shared/components/Loader';
 import {ISticker} from '../../shared/models/interface/sticker.interface';
-import TextIcon from '../../../assets/icons/textIcon.jpg';
-import StickerIcon from '../../../assets/icons/stickerIcon.jpg';
+import TextSVGIcon from '../../../assets/icons/textIcon.svg';
+import StickerSVGIcon from '../../../assets/icons/stickerIcon.svg';
 import CloseIcon from '../../../assets/icons/close.svg';
+import DownloadableImage from '../DownloadableImage';
 
-interface IImageContentProps {
+interface IImageEditorProps {
   loading: boolean;
   imagePath: string;
   componentRef: React.MutableRefObject<null | any>;
-  selectedItemsList: ISticker[];
-  handleSelect: (event: any, item: ISticker) => void;
-  bottomSheetRef: any;
-  handleClose: () => void;
-  handleOpen: () => void;
+  sheetRef: React.MutableRefObject<null | any>;
   handleShowCamera: () => void;
   saveBtnHandler: () => Promise<void>;
 }
 
-const ImageContent = ({
+const ImageEditor = ({
   loading,
   imagePath,
   componentRef,
-  selectedItemsList,
-  handleClose,
-  handleSelect,
-  bottomSheetRef,
-  handleOpen,
+  sheetRef,
   handleShowCamera,
   saveBtnHandler,
-}: IImageContentProps): JSX.Element => {
+}: IImageEditorProps): JSX.Element => {
+  const [selectedItemsList, setSelectedItemsList] = useState<ISticker[]>([]);
+
+  const handleSelect = (event: any, item: ISticker) => {
+    setSelectedItemsList([...selectedItemsList, item]);
+    Keyboard.dismiss();
+    handleClose();
+  };
+
+  const handleOpen = (): void => {
+    sheetRef.current?.show();
+  };
+
+  const handleClose = (): void => {
+    sheetRef?.current?.hide();
+  };
+
   return (
     <>
       {!loading && imagePath ? (
         <>
-          <View style={styles.downloadableImageContainer} ref={componentRef}>
-            <Image
-              style={styles.image}
-              source={{
-                uri: `file://'${imagePath}`,
-              }}
-            />
-            {selectedItemsList.length > 0 ? (
-              <View style={styles.stickersContainer}>
-                {selectedItemsList.map((item, index) => (
-                  <ResizableSticker key={index} source={item.path} />
-                ))}
-              </View>
-            ) : null}
-          </View>
+          <DownloadableImage
+            list={selectedItemsList}
+            componentRef={componentRef}
+            imagePath={imagePath}
+          />
           <View style={styles.backButton}>
             <TouchableOpacity
               style={styles.closeBtn}
@@ -62,24 +60,16 @@ const ImageContent = ({
           <StickersPicker
             handleSelect={handleSelect}
             handleClose={handleClose}
-            bottomSheetRef={bottomSheetRef as any}
+            bottomSheetRef={sheetRef as any}
           />
           <View style={styles.imageEditingButtons}>
             <TouchableOpacity
               style={styles.closeBtn}
               onPress={() => console.log('text icon')}>
-              <Image
-                source={TextIcon}
-                style={styles.icon}
-                resizeMode="contain"
-              />
+              <TextSVGIcon width={40} height={40} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.closeBtn} onPress={handleOpen}>
-              <Image
-                source={StickerIcon}
-                style={styles.icon}
-                resizeMode="contain"
-              />
+              <StickerSVGIcon width={40} height={40} />
             </TouchableOpacity>
           </View>
           {selectedItemsList.length > 0 ? (
@@ -95,7 +85,7 @@ const ImageContent = ({
   );
 };
 
-export default ImageContent;
+export default ImageEditor;
 
 const styles = StyleSheet.create({
   saveBtn: {
@@ -133,14 +123,6 @@ const styles = StyleSheet.create({
     transform: [{translateY: 0}],
     padding: 20,
   },
-  stickersContainer: {
-    position: 'absolute',
-    top: 100,
-    left: 100,
-    height: '100%',
-    width: '100%',
-    zIndex: 2,
-  },
   backButton: {
     backgroundColor: 'rgba(0,0,0,0.0)',
     position: 'absolute',
@@ -148,14 +130,5 @@ const styles = StyleSheet.create({
     width: '100%',
     top: 0,
     padding: 20,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    aspectRatio: 9 / 16,
-  },
-  downloadableImageContainer: {
-    position: 'absolute',
-    flex: 1,
   },
 });
