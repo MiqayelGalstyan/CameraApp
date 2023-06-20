@@ -11,7 +11,8 @@
     "postinstall": "patch-package",
     "clean": "react-native clean",
     "link": "react-native link",
-    "android-release": "react-native run-android --variant='release'"
+    "android-release": "react-native run-android --variant='release'",
+    "assemble-release": "cd android && ./gradlew assembleRelease"
   },
   "dependencies": {
     "npm": "^9.7.1",
