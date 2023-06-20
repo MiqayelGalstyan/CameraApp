@@ -30,25 +30,26 @@ Please grant your permission to the camera.
 
 1. After the permission is granted, capture the photo.
 
-![Alt text](./assets/images/photo1.jpeg "Photo Image")
-
 2. Two icons can be seen on the left side of your screen. 
 
-![Alt text](./assets/images/photo2.jpeg "Stickers List Image")
+![Alt text](./assets/images/photo1.jpeg "Photo Image" | width=400)
 
 3. After taking photo, please press on the stickers icon where you will find all the available stickers. 
 
+![Alt text](./assets/images/photo2.jpeg "Stickers List Image" | width=400)
+
 4. To find a sticker, type one of the following keywords: "kargin", "hi", "ok", "barev", "armenian". 
 
-![Alt text](./assets/images/photo3.jpeg "Search Stickers Image")
+![Alt text](./assets/images/photo3.jpeg "Search Stickers Image" | width=400)
 
 5. After choosing the sticker, you can resize,rotate and scale the sticker/stickers.
 
 6. Press on the save button the save the resulted image in your photos.
 
-![Alt text](./assets/images/photo4.jpeg "Sticker Resize,Rotate,Scale Image")
-
 7. The image is successfully saved in your phone.
+
+![Alt text](./assets/images/photo4.jpeg "Sticker Resize,Rotate,Scale Image" | width=400))
+
 
 ## The project structure is organized as follows:
 
